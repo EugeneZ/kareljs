@@ -6,16 +6,11 @@
 //
 // etc: beepersInBag(), noBeepersInBag() 
 
-import { move, turnLeft } from "./karel"
+import { move } from "./karel"
 import { TestCase } from "./types"
 
 export function program() {
-  move()
-  move()
-  move()
-  turnLeft()
-  move()
-  move()
+move()
 }
 
 
@@ -26,27 +21,13 @@ export function getTestCases(): TestCase[] {
         x: 0,
         y: 5,
         direction: 'east',
-        beepers: [{ x: 3, y: 3 }],
+        beepers: [{ x: 2, y: 5 }, { x: 4, y: 5 }],
     },
     goalState: {
-        x: 3,
-        y: 3,
+        x: 5,
+        y: 5,
         direction: 'east',
-        beepers: [],
-    }
-  },{
-    context: { boardHeight: 9, boardWidth: 9},
-    initialState: {
-        x: 0,
-        y: 8,
-        direction: 'east',
-        beepers: [{ x: 7, y: 2 }],
-    },
-    goalState: {
-        x: 7,
-        y: 2,
-        direction: 'east',
-        beepers: [],
+        beepers: [{ x: 2, y: 0 },{ x: 2, y: 1 },{ x: 2, y: 2 },{ x: 2, y: 3 },{ x: 2, y: 4 },{ x: 2, y: 5 }, { x: 4, y: 0 },{ x: 4, y: 1 },{ x: 4, y: 2 },{ x: 4, y: 3 },{ x: 4, y: 4 },{ x: 4, y: 5 }],
     }
   }]
 }
