@@ -4,79 +4,101 @@ import { postProgram, preProgram } from "./karel";
 import { getTestCases, program } from "./program";
 import { Context, Direction, State, TestCase } from "./types";
 
+type TestCaseResult = {
+  testCase: TestCase;
+  result: RunResult;
+};
+
+type RunResult = { run: false } | CompletedRunResult;
+type CompletedRunResult =
+  | { run: true; error: false; states: State[] }
+  | { run: true; error: true; message: string };
+
 export default function KarelComponent() {
-  const context: Context = {
-    boardHeight: 6,
-    boardWidth: 6,
-  };
-  const testCases = getTestCases();
+  const [currentTestCaseIndex, setCurrentTestCaseIndex] = useState<number>(0);
 
-  if (!testCases) {
-    throw new Error("test cases must exist");
-  }
-
-  const canonicalTestCase = testCases[0];
-
-  if (!canonicalTestCase) {
-    throw new Error("at least one test case must be provided");
-  }
-
-  const [states, setStates] = useState<State[]>([
-    canonicalTestCase.initialState,
-  ]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
-  console.log("Application state", states[currentIndex]);
 
-  const [failedTestCases, setFailedTestCases] = useState<number[]>([]);
+  const [testCases, setTestCases] = useState<TestCaseResult[]>(
+    getInitialTestCases()
+  );
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const currentTestCase = testCases[currentTestCaseIndex];
+
+  if (!currentTestCase) {
+    throw new Error("test case must exist");
+  }
+
+  const [states, setStates] = useState<State[]>([
+    currentTestCase.testCase.initialState,
+  ]);
+
   const handleClickRun = async () => {
-    // Reset to initial state, if needed
-    setStates([canonicalTestCase.initialState]);
-    setFailedTestCases([]);
+    setTestCases(getInitialTestCases());
+
+    const newTestCases: TestCaseResult[] = [];
 
     // Run test cases
     for (let i = 0; i < testCases.length; i++) {
-      const testCase = testCases[i];
+      const testCase = testCases[i]?.testCase;
 
       if (!testCase) {
         throw new Error("test case must exist");
       }
 
-      const fail = ()=>setFailedTestCases((prevFailedTestCases) =>
-      prevFailedTestCases.concat(i)
-    );
       const result = run(testCase.initialState, testCase.context);
       if (result.error) {
-        fail();
+        newTestCases.push({ testCase, result });
         continue;
       }
       const finalState = result.states[result.states.length - 1];
       if (!finalState) {
-        fail()
-        continue
+        newTestCases.push({
+          testCase,
+          result: {
+            run: true,
+            error: true,
+            message: "Karel didn't do anything. Program exits early?",
+          },
+        });
+        continue;
       }
       if (!statesEqual(testCase.goalState, finalState)) {
-        fail()
-        continue
+        newTestCases.push({
+          testCase,
+          result: { run: true, error: true, message: "Did not meet goal." },
+        });
+        continue;
       }
+
+      newTestCases.push({ testCase, result });
     }
 
-    // Run "canonical" test case -- the one we actuall show the user
-    let result = run(canonicalTestCase.initialState, context);
+    setTestCases(newTestCases);
 
-    if (result.error) {
-      setErrorMessage(result.message);
-      return
+    const result = newTestCases[newTestCases.length - 1];
+
+    if (!result) {
+      setErrorMessage("No test cases found");
+      return;
     }
 
-    setStates(result.states);
+    if (!result.result.run) {
+      setErrorMessage("Program did not run");
+      return;
+    }
+
+    if (result.result.error) {
+      setErrorMessage(result.result.message);
+      return;
+    }
 
     // Run queue
-    for (let i = 0; i < result.states.length; i++) {
+    for (let i = 0; i < result.result.states.length; i++) {
       await pause();
-      const state = result.states[i];
+      const state = result.result.states[i];
 
       if (!state) {
         throw new Error("state must exist");
@@ -112,8 +134,8 @@ export default function KarelComponent() {
     <div>
       {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
       <Grid
-        width={context.boardWidth}
-        height={context.boardHeight}
+        width={currentTestCase.testCase.context.boardWidth}
+        height={currentTestCase.testCase.context.boardHeight}
         state={stateToUse}
       />
       <button onClick={handleBack} disabled={currentIndex === 0}>
@@ -128,7 +150,10 @@ export default function KarelComponent() {
       </button>
 
       {testCases.map((testCase, i) => (
-        <TestCaseDisplay testCase={testCase} failed={failedTestCases.includes(i)}/>
+        <TestCaseDisplay
+          testCase={testCase.testCase}
+          result={testCase.result}
+        />
       ))}
     </div>
   );
@@ -136,12 +161,20 @@ export default function KarelComponent() {
 
 type TestCaseDisplayProps = {
   testCase: TestCase;
-  failed: boolean
+  result: RunResult;
 };
 
-function TestCaseDisplay({ testCase, failed }: TestCaseDisplayProps) {
+function TestCaseDisplay({ testCase, result }: TestCaseDisplayProps) {
   return (
-    <div style={{ display: "flex", border: `3px solid ${failed ? 'red' : 'black'}`, padding: 20 }}>
+    <div
+      style={{
+        display: "flex",
+        border: `3px solid ${
+          result.run ? (result.error ? "red" : "green") : "black"
+        }`,
+        padding: 20,
+      }}
+    >
       <div style={{ zoom: "0.2" }}>
         <Grid
           width={testCase.context.boardWidth}
@@ -330,21 +363,19 @@ const pause = () =>
     setTimeout(resolve, 250);
   });
 
-  type RunResult = { error: false, states: State[] } | { error: true, message: string };
-
-const run = (initialState: State, context: Context): RunResult =>{
+const run = (initialState: State, context: Context): CompletedRunResult => {
   preProgram(initialState, context);
-    try {
-      program();
-    } catch (e) {
-      let message = "Unknown error";
-      if (e instanceof Error) {
-        message = e.message;
-      }
-      return { error: true, message };
+  try {
+    program();
+  } catch (e) {
+    let message = "Unknown error";
+    if (e instanceof Error) {
+      message = e.message;
     }
-    return { error: false, states: postProgram()};
-}
+    return { run: true, error: true, message };
+  }
+  return { run: true, error: false, states: postProgram() };
+};
 
 const statesEqual = (a: State, b: State) => {
   return (
@@ -352,6 +383,11 @@ const statesEqual = (a: State, b: State) => {
     a.y === b.y &&
     a.direction === b.direction &&
     a.beepers.length === b.beepers.length &&
-    a.beepers.every((beeper) => b.beepers.some((b) => b.x === beeper.x && b.y === beeper.y))
+    a.beepers.every((beeper) =>
+      b.beepers.some((b) => b.x === beeper.x && b.y === beeper.y)
+    )
   );
 };
+
+const getInitialTestCases = (): TestCaseResult[] =>
+  getTestCases().map((testCase) => ({ testCase, result: { run: false } }));
