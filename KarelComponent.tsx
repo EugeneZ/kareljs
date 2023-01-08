@@ -110,6 +110,7 @@ export default function KarelComponent() {
 
   return (
     <div>
+      {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
       <Grid
         width={context.boardWidth}
         height={context.boardHeight}

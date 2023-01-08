@@ -2,10 +2,12 @@ import { Context, State } from "./types"
 
 let states: State[] = []
 let context: Context | null = null
+let startTime = 0
 
 export function preProgram(state: State, newContext: Context) {
   states = [state]
   context = newContext
+  startTime = Date.now()
 }
 
 export function postProgram(): State[] {
@@ -14,7 +16,12 @@ export function postProgram(): State[] {
 
 type CommandHandler<T> = (state: State, context: Context) => [State, T]
 
-export function doCommand<T>(fn: CommandHandler<T>): T { 
+export function doCommand<T>(fn: CommandHandler<T>): T {
+  // Check for infinite loops or other very long running programs
+  if (Date.now() - startTime > 1000) {
+    throw new Error('program took too long to run')
+  }
+  
   const latestState = states[states.length-1]
 
   if (!latestState) {
