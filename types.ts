@@ -24,3 +24,7 @@ export type Context = {
   boardWidth: number;
   boardHeight: number;
 }
+
+export type RunResult =
+  | { error: false; states: State[] }
+  | { error: true; message: string };

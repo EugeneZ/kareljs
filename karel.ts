@@ -1,4 +1,4 @@
-import { Context, State } from "./types"
+import { Context, RunResult, State } from "./types"
 
 let states: State[] = []
 let context: Context | null = null
@@ -14,6 +14,32 @@ export function postProgram(): State[] {
   return states
 }
 
+export const runProgram = (program: ()=>unknown, initialState: State, context: Context): RunResult => {
+  preProgram(initialState, context);
+  try {
+    program();
+  } catch (e) {
+    let message = "Unknown error";
+    if (e instanceof Error) {
+      message = e.message;
+    }
+    return { error: true, message };
+  }
+  return { error: false, states: postProgram() };
+};
+
+export const statesEqual = (a: State, b: State) => {
+  return (
+    a.x === b.x &&
+    a.y === b.y &&
+    a.direction === b.direction &&
+    a.beepers.length === b.beepers.length &&
+    a.beepers.every((beeper) =>
+      b.beepers.some((b) => b.x === beeper.x && b.y === beeper.y)
+    )
+  );
+};
+
 type CommandHandler<T> = (state: State, context: Context) => [State, T]
 
 export function doCommand<T>(fn: CommandHandler<T>): T {
@@ -21,7 +47,7 @@ export function doCommand<T>(fn: CommandHandler<T>): T {
   if (Date.now() - startTime > 1000) {
     throw new Error('program took too long to run')
   }
-  
+
   const latestState = states[states.length-1]
 
   if (!latestState) {
