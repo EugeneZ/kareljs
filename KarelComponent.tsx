@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ButtonHTMLAttributes } from "react";
 import { useState } from "react";
 import Grid from "./Grid";
 import { runProgram, statesEqual } from "./karel";
@@ -136,24 +136,46 @@ export default function KarelComponent() {
         height={currentTestCase.testCase.context.boardHeight}
         state={stateToUse}
       />
-      <button onClick={handleBack} disabled={currentIndex === 0}>
-        &lt;
-      </button>
-      <button onClick={handleClickRun}>Run</button>
-      <button
-        onClick={handleForward}
-        disabled={currentIndex === states.length - 1 || currentIndex === -1}
-      >
-        &gt;
-      </button>
+      <div style={{ marginTop: "1em" }}>
+        <Button onClick={handleBack} disabled={currentIndex === 0}>
+          &lt;
+        </Button>
+        <Button
+          onClick={handleForward}
+          disabled={currentIndex === states.length - 1 || currentIndex === -1}
+        >
+          &gt;
+        </Button>
+        <Button onClick={handleClickRun} style={{ marginLeft: "0.5em" }}>
+          Run Program
+        </Button>
+      </div>
 
-      {testCaseResults.map((testCase) => (
-        <TestCaseDisplay
-          testCase={testCase.testCase}
-          result={testCase.result}
-        />
-      ))}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          marginTop: "1em",
+        }}
+      >
+        {testCaseResults.map((testCase) => (
+          <TestCaseDisplay
+            testCase={testCase.testCase}
+            result={testCase.result}
+          />
+        ))}
+      </div>
     </div>
+  );
+}
+
+function Button(props: ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      {...props}
+      style={{ padding: "1em", fontSize: "x-large", ...props.style }}
+    />
   );
 }
 
