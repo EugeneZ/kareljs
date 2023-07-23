@@ -8,6 +8,8 @@ import c4 from './04.cases'
 import p4 from './04.program'
 import c5 from './05.cases'
 import p5 from './05.program'
+import c6 from './06.cases'
+import p6 from './06.program'
 import c10 from './10.cases'
 import p10 from './10.program'
 
@@ -31,6 +33,10 @@ export default {
   '05: Clean the Aisle': {
     cases: c5,
     program: p5,
+  },
+  '06: Clean Two Aisles': {
+    cases: c6,
+    program: p6,
   },
   '10: Rebuild the columns': {
     cases: c10,

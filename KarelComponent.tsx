@@ -209,7 +209,6 @@ export default function KarelComponent() {
           <li>turnLeft()</li>
           <li>putBeeper()</li>
           <li>pickBeeper()</li>
-          <li>frontIsClear()</li>
           <li>frontIsBlocked()</li>
           <li>leftIsBlocked()</li>
           <li>rightIsBlocked()</li>
