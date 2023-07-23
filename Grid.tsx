@@ -13,11 +13,12 @@ export default function Grid({ width, height, state }: GridProps) {
       {Array(height)
         .fill(null)
         .map((_, y) => (
-          <GridRow>
+          <GridRow key={y}>
             {Array(width)
               .fill(null)
               .map((_, x) => (
                 <Cell
+                  key={x}
                   beepers={
                     state.beepers.filter(
                       (beeper) => beeper.x === x && beeper.y === y

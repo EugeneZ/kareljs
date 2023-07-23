@@ -1,20 +1,6 @@
-// TODO:
-// 1. Test cases
-// 5. paintCorner(color)
-// 6. Walls
-// 7. random(), random(p) 
-//
-// etc: beepersInBag(), noBeepersInBag() 
+import { TestCase } from "../types";
 
-import { move } from "./karel"
-import { TestCase } from "./types"
-
-export function program() {
-move()
-}
-
-
-export function getTestCases(): TestCase[] {
+export default function getTestCases(): TestCase[] {
   return [{
     context: { boardHeight: 6, boardWidth: 6},
     initialState: {

@@ -21,7 +21,7 @@ export const runProgram = (program: ()=>unknown, initialState: State, context: C
   } catch (e) {
     let message = "Unknown error";
     if (e instanceof Error) {
-      message = e.message;
+      message = e.name + ": " + e.message;
     }
     return { error: true, message };
   }
@@ -119,7 +119,7 @@ const handleMove: CommandHandler<undefined> = function(state: State, context: Co
   console.log('move', state, context)
   if (state.direction === 'north') {
     if (state.y === 0) {
-      return [state, undefined]
+      throw new Error('crashed into wall')
     }
     return [{
       ...state,
@@ -127,7 +127,7 @@ const handleMove: CommandHandler<undefined> = function(state: State, context: Co
     }, undefined]
   } else if (state.direction === 'east') {
     if (state.x + 1 === context.boardWidth) {
-      return [state, undefined]
+      throw new Error('crashed into wall')
     }
     return [{
       ...state,
@@ -135,7 +135,7 @@ const handleMove: CommandHandler<undefined> = function(state: State, context: Co
     }, undefined]
   }else if (state.direction === 'south') {
     if (state.y + 1 === context.boardHeight) {
-      return [state, undefined]
+      throw new Error('crashed into wall')
     }
     return [{
       ...state,
@@ -143,7 +143,7 @@ const handleMove: CommandHandler<undefined> = function(state: State, context: Co
     }, undefined]
   } else if (state.direction === 'west') {
     if (state.x === 0) {
-      return [state, undefined]
+      throw new Error('crashed into wall')
     }
     return [{
       ...state,
