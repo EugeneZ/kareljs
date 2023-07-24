@@ -9,7 +9,6 @@ export default function getTestCases(): TestCase[] {
         y: 2,
         direction: "east",
         beepers: [
-          { x: 0, y: 2 },
           { x: 1, y: 2 },
           { x: 2, y: 2 },
           { x: 0, y: 1 },
@@ -28,10 +27,9 @@ export default function getTestCases(): TestCase[] {
       context: { boardHeight: 3, boardWidth: 6 },
       initialState: {
         x: 0,
-        y: 1,
-        direction: "west",
+        y: 2,
+        direction: "east",
         beepers: [
-          { x: 0, y: 2 },
           { x: 1, y: 2 },
           { x: 2, y: 2 },
           { x: 3, y: 2 },
@@ -46,9 +44,9 @@ export default function getTestCases(): TestCase[] {
         ],
       },
       goalState: {
-        x: 5,
-        y: 2,
-        direction: "east",
+        x: 0,
+        y: 1,
+        direction: "west",
         beepers: [],
       },
     },
